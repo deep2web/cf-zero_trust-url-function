@@ -1,5 +1,8 @@
 FROM python:3.11-slim
 
+# Verhindert, dass Python Outputs buffert
+ENV PYTHONUNBUFFERED=1 
+
 # 1. Setze das Arbeitsverzeichnis
 WORKDIR /usr/src/app
 
