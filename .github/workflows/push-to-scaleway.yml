@@ -40,7 +40,13 @@ jobs:
       - name: Build and Push Docker Image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          # context: Der Ordner, in dem der Build "spielt" (hier dein Unterordner)
+          context: ./app
+          # file: Pfad zum Dockerfile (relativ zum Root des Repos oder Context)
+          # Da context auf ./app gesetzt ist, findet er es automatisch, 
+          # aber explizit ist besser:
+          file: ./app/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
