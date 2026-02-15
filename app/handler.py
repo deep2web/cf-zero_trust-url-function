@@ -12,6 +12,8 @@ def handle(event, context):
     
     # 2. Secret laden
     secret_json_str = os.environ.get('CLOUDFLARE_AUTH')
+    print(f"DEBUG: RAW SECRET STRING: '{secret_json_str}'", flush=True)
+
     
     # Sicherheits-Check
     if not target_url:
