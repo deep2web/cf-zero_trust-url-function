@@ -60,5 +60,7 @@ Um das Skript lokal zu testen, exportiere die Variablen in deiner Shell:
 export TARGET_URL="https://example.com"
 export CF-Access-Client-Id="deine-id"
 export CF-Access-Client-Secret="dein-secret"
-
 python3 local_test.py
+```
+
+_Teile des Codes wurden mittels des LLM Gemini 3 Pro erstellt_
