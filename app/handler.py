@@ -6,8 +6,8 @@ def handle(event, context):
     target_url = os.environ.get('TARGET_URL')
     
     # 2. Secrets laden (Cloudflare Auth)
-    cf_id = os.environ.get('CF_CLIENT_ID')
-    cf_secret = os.environ.get('CF_CLIENT_SECRET')
+    cf_id = os.environ.get('CF-Access-Client-Id')
+    cf_secret = os.environ.get('CF-Access-Client-SecretT')
 
     # Sicherheits-Check: Fehlt was?
     if not target_url:
