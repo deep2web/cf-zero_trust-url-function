@@ -1,66 +1,98 @@
-# Scaleway Cloudflare Cron Trigger 🚀
+# Cloudflare Zero Trust Cron Trigger (Scaleway) 🚀
 
-![Python](https://img.shields.io/badge/Python-3.x-blue?style=flat-square&logo=python)
+![Docker](https://img.shields.io/badge/Docker-Container-blue?style=flat-square&logo=docker)
+![Python](https://img.shields.io/badge/Python-3.11-yellow?style=flat-square&logo=python)
 ![Scaleway](https://img.shields.io/badge/Scaleway-Serverless-purple?style=flat-square&logo=scaleway)
-![Cloudflare](https://img.shields.io/badge/Cloudflare-Zero%20Trust-orange?style=flat-square&logo=cloudflare)
 
-Eine leichtgewichtige **Scaleway Serverless Function**, um zeitgesteuerte HTTP-Requests (Cron Jobs) an Endpunkte zu senden, die durch **Cloudflare Zero Trust (Access)** geschützt sind.
+Ein Docker-basierter **Scaleway Serverless Cron-Job**, um authentifizierte HTTP-Requests an Endpunkte zu senden, die durch **Cloudflare Zero Trust (Access)** geschützt sind.
 
-Entwickelt für interne Automatisierung bei **SOMSOS Limited**.
+Der Container wird automatisch via GitHub Actions gebaut und in die Scaleway Container Registry gepusht.
 
-## sparkles: Features
+## ✨ Features
 
-- **Zero Trust Kompatibel:** Authentifiziert sich automatisch gegenüber Cloudflare Access mittels Service Tokens.
-- **Konfigurierbar:** Ziel-URL kann über Umgebungsvariablen geändert werden, ohne den Code neu zu deployen.
-- **Sicher:** Sensible Credentials (Client Secret) werden sicher als Scaleway Secrets verwaltet.
-- **Kosteneffizient:** Läuft im Scaleway Free Tier (Serverless Functions).
+- **Zero Trust Authentication:** Nutzt Cloudflare Service Tokens (`CF-Access-Client-Id` & `Secret`).
+- **Secure Configuration:** Credentials werden sicher als JSON-Objekt im Scaleway Secret Manager verwaltet.
+- **Dockerized:** Sauberer Build-Prozess mit `python:3.11-slim`.
+- **CI/CD:** Automatischer Push in die Scaleway Registry bei jedem Commit auf `main`.
 
-## 🛠 Konfiguration
+## 📂 Projektstruktur
 
-Die Funktion benötigt folgende Umgebungsvariablen und Secrets in der Scaleway Konsole:
+```text
+/
+├── .github/workflows/   # CI/CD Pipeline
+├── app/                 # Quellcode
+│   ├── Dockerfile       # Container Definition
+│   ├── handler.py       # Python Logik
+│   └── requirements.txt # Abhängigkeiten
+└── README.md
+```
 
-### Environment Variables (Klartext)
-Diese Variablen steuern das Ziel und können jederzeit geändert werden.
+## 🛠 Konfiguration (Scaleway)
+
+Der Container benötigt zwei Arten von Umgebungsvariablen in der Scaleway Serverless Container Konfiguration:
+
+### 1. Environment Variables (Klartext)
+
+Hier wird das Ziel definiert.
 
 | Key | Beschreibung | Beispiel |
 | :--- | :--- | :--- |
-| `TARGET_URL` | Die volle URL, die aufgerufen werden soll. | `https://internal.somsos.net/api/sync` |
+| `TARGET_URL` | Die URL, die aufgerufen werden soll. | `https://internal.example.com/api/sync` |
 
-### Secrets (Verschlüsselt)
-Diese Werte müssen im Bereich "Secrets" der Function hinterlegt werden. Sie werden für den `CF-Access-Client-Id` und `CF-Access-Client-Secret` Header genutzt.
+### 2. Secrets (Verschlüsselt)
 
-| Key | Beschreibung | Woher? |
-| :--- | :--- | :--- |
-| `CF-Access-Client-Id` | Die ID des Cloudflare Service Tokens. | Cloudflare Zero Trust Dashboard |
-| `CF-Access-Client-Secret` | Das Secret des Service Tokens. | Cloudflare Zero Trust Dashboard |
+Erstelle im Scaleway Secret Manager **ein** Secret, das die Zugangsdaten als JSON enthält.
 
-## 🚀 Deployment (Manuell)
+**Secret Name (Empfehlung):** `cloudflare-auth-json`
 
-1. **Scaleway Function erstellen:**
-   - Runtime: `Python 3.x`
-   - Privacy: `Public` (Schutz erfolgt durch Nicht-Veröffentlichung der Trigger-URL oder interne Logik)
+**Inhalt (JSON):**
 
-2. **Code einfügen:**
-   Kopiere den Inhalt von `handler.py` in den Editor.
+```json
+{
+  "CF-Access-Client-Id": "deine-client-id",
+  "CF-Access-Client-Secret": "dein-client-secret"
+}
+```
 
-3. **Dependencies:**
-   Füge `requests` zur `requirements.txt` hinzu.
+Binde dieses Secret dann im Container als **Environment Variable** ein:
 
-4. **Variablen setzen:**
-   Konfiguriere die oben genannten Env Vars und Secrets.
+| Environment Key | Secret Reference |
+| :--- | :--- |
+| `CLOUDFLARE_AUTH` | Verweist auf dein Secret `cloudflare-auth-json` (Version `latest`) |
 
-5. **Cron Trigger:**
-   Füge in den Funktionseinstellungen einen Cron-Schedule hinzu (z.B. `0 3 * * *` für tägliche Ausführung um 3 Uhr nachts).
+## 🚀 Deployment (CI/CD)
+
+Der Workflow `.github/workflows/push-to-scaleway.yml` baut das Image und lädt es hoch.
+
+### Voraussetzungen im GitHub Repository:
+
+Unter `Settings` -> `Secrets and variables` -> `Actions`:
+
+**Repository Secrets:**
+- `SCW_SECRET_KEY`: Dein Scaleway API Secret Key.
+
+**Repository Variables:**
+- `SCW_REGISTRY_IMAGE`: Die volle URL zu deinem Image in der Scaleway Registry.
+  - *Beispiel:* `rg.nl-ams.scw.cloud/somsos-public/cf-zerotrust-url-function`
 
 ## 📦 Local Development
 
-Um das Skript lokal zu testen, exportiere die Variablen in deiner Shell:
+Um den Container lokal zu testen:
 
 ```bash
-export TARGET_URL="https://example.com"
-export CF-Access-Client-Id="deine-id"
-export CF-Access-Client-Secret="dein-secret"
-python3 local_test.py
+# Image bauen
+docker build -t cron-bot ./app
+
+# Container starten (mit Dummy-Werten)
+docker run --rm \
+  -e TARGET_URL="https://example.com" \
+  -e CLOUDFLARE_AUTH='{"CF-Access-Client-Id":"123", "CF-Access-Client-Secret":"abc"}' \
+  cron-bot
 ```
+
+## 📄 License
+
+MIT License - Copyright (c) 2026 SOMSOS Limited
+
 
 _Teile des Codes wurden mittels des LLM Gemini 3 Pro erstellt_
