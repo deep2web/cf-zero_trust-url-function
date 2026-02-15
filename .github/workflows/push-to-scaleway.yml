@@ -1,0 +1,46 @@
+name: Build and Push to Scaleway
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Extrahiert den Hostnamen (z.B. rg.fr-par.scw.cloud) aus der vollen Image-URL
+      # Das macht den Login-Schritt dynamisch, egal welche Registry du nutzt.
+      - name: Extract Registry Host
+        id: registry_host
+        run: |
+          FULL_IMAGE="${{ vars.SCW_REGISTRY_IMAGE }}"
+          HOST=$(echo $FULL_IMAGE | cut -d'/' -f1)
+          echo "host=$HOST" >> $GITHUB_OUTPUT
+
+      - name: Login to Scaleway Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ steps.registry_host.outputs.host }}
+          username: nologin
+          password: ${{ secrets.SCW_SECRET_KEY }}
+
+      - name: Extract Metadata (Tags, Labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ vars.SCW_REGISTRY_IMAGE }}
+          tags: |
+            type=raw,value=latest
+            type=sha,format=short
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
