@@ -40,7 +40,7 @@ def handle(event, context):
     try:
         # Request senden
         print(f"Pinging {target_url}...")
-        response = requests.get(target_url, headers=headers, timeout=10)
+        response = requests.post(target_url, headers=headers, timeout=10)
         
         return {
             "body": f"Success: {response.status_code}",
