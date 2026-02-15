@@ -1,17 +1,19 @@
-# Datei: /app/Dockerfile
 FROM python:3.11-slim
 
-WORKDIR /usr/src/app  # Standard Linux Pfad
+# 1. Setze das Arbeitsverzeichnis
+WORKDIR /usr/src/app
 
-# Kopiere requirements aus dem aktuellen Context (also /app Ordner)
+# 2. Kopiere requirements
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Kopiere den Rest (handler.py etc.)
+# 3. Kopiere den Rest des Codes
 COPY . .
 
-# User security
-RUN useradd -m appuser && chown -R appuser /usr/src/app
+# 4. User anlegen und Rechte vergeben
+RUN useradd -m appuser && chown -R appuser .
+
+# 5. Zum User wechseln
 USER appuser
 
 CMD ["python", "handler.py"]
