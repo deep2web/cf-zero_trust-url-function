@@ -31,8 +31,8 @@ Diese Werte müssen im Bereich "Secrets" der Function hinterlegt werden. Sie wer
 
 | Key | Beschreibung | Woher? |
 | :--- | :--- | :--- |
-| `CF_CLIENT_ID` | Die ID des Cloudflare Service Tokens. | Cloudflare Zero Trust Dashboard |
-| `CF_CLIENT_SECRET` | Das Secret des Service Tokens. | Cloudflare Zero Trust Dashboard |
+| `CF-Access-Client-Id` | Die ID des Cloudflare Service Tokens. | Cloudflare Zero Trust Dashboard |
+| `CF-Access-Client-Secret` | Das Secret des Service Tokens. | Cloudflare Zero Trust Dashboard |
 
 ## 🚀 Deployment (Manuell)
 
@@ -58,7 +58,7 @@ Um das Skript lokal zu testen, exportiere die Variablen in deiner Shell:
 
 ```bash
 export TARGET_URL="https://example.com"
-export CF_CLIENT_ID="deine-id"
-export CF_CLIENT_SECRET="dein-secret"
+export CF-Access-Client-Id="deine-id"
+export CF-Access-Client-Secret="dein-secret"
 
 python3 local_test.py
