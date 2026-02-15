@@ -48,3 +48,15 @@ def handle(event, context):
         }
     except Exception as e:
         return {"statusCode": 500, "body": str(e)}
+
+
+
+
+if __name__ == "__main__":
+    print("Starting manual execution...", flush=True)
+    
+    # Dummy-Event/Context (werden im Container-Modus eh nicht genutzt)
+    result = handle({}, {})
+    
+    print("Execution finished:", flush=True)
+    print(result, flush=True)
